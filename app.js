@@ -1,11 +1,25 @@
 import { siteConfig } from "./config.js";
 import { articles } from "./articles.js";
+import { pinnedProjects } from "./generated/pinned-projects.js";
 
 const base = "https://api.github.com";
 const grid = document.querySelector("#project-grid");
 const articlesGrid = document.querySelector("#article-grid");
 const dialog = document.querySelector("#dialog");
 const content = document.querySelector("#dialog-content");
+const manualProjectsByRepo = new Map(siteConfig.manualProjects.map((project) => [project.repo, project]));
+const projects = pinnedProjects.length
+  ? pinnedProjects.map((project) => {
+    const fallback = manualProjectsByRepo.get(project.repo);
+    return {
+      ...project,
+      ...fallback,
+      repo: project.repo,
+      summary: fallback?.summary || project.summary,
+      tags: fallback?.tags || [project.language].filter(Boolean)
+    };
+  })
+  : siteConfig.manualProjects;
 
 const esc = (s = "") => String(s).replace(/[&<>"']/g, (c) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -40,7 +54,7 @@ function card(project, repository) {
 }
 
 async function renderProjects() {
-  const data = await Promise.all(siteConfig.manualProjects.map(async (project) => ({ project, repository: await repo(project.repo) })));
+  const data = await Promise.all(projects.map(async (project) => ({ project, repository: await repo(project.repo) })));
   grid.innerHTML = data.map(({ project, repository }) => card(project, repository)).join("");
   grid.querySelectorAll("[data-repo]").forEach((button) => { button.onclick = () => openProject(button.dataset.repo); });
 }
@@ -59,7 +73,7 @@ async function release(name) {
 }
 
 async function openProject(name) {
-  const project = siteConfig.manualProjects.find((item) => item.repo === name);
+  const project = projects.find((item) => item.repo === name);
   const article = project?.articleId && articles.find((item) => item.id === project.articleId);
   content.innerHTML = "<p>Proje bilgileri yükleniyor...</p>";
   dialog.showModal();

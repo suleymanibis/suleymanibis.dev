@@ -16,7 +16,9 @@ Ardından `http://localhost:8000` adresini açın.
 
 Tüm kişisel ayarlar `config.js` içindedir: `githubUsername`, profil bağlantıları, e-posta metinleri ve `manualProjects` listesi. Her proje girdisindeki `repo`, GitHub repository adıyla aynı olmalıdır. Başlık, özet, etiketler ve ilişkilendirilecek `articleId` de buradan düzenlenir.
 
-GitHub REST API pinned repository listesini herkese açık biçimde sağlamadığı için site pinned repoları `manualProjects` listesinden alır. Bu liste, `suleymanibis` profilindeki gerçek pinned sırasıyla senkronlanmıştır; profil pin'leri değiştiğinde listeyi de güncelleyin. Her repository'nin güncel adı, dili, açıklaması, README'si ve release assetleri public GitHub API'den yüklenir. API erişilemezse kartlar yine manuel başlık, özet ve etiketlerle görünür; README alınamazsa kullanıcıya durum mesajı gösterilir.
+GitHub REST API pinned repository listesini herkese açık biçimde sağlamadığı için site `generated/pinned-projects.js` dosyasını kullanır. Bu dosya, GitHub Actions'taki `sync-pinned-repos.yml` workflow'u tarafından her gün GraphQL API ve Actions'ın geçici `GITHUB_TOKEN` yetkisiyle güncellenir. Token hiçbir zaman site JavaScript'ine veya build çıktısına yazılmaz. Pinned repo değişiklikleri workflow'un commit'i ve Pages deploy'u sonrasında otomatik görünür.
+
+`config.js` içindeki `manualProjects` pinned verisinin metadata fallback'idir: yerel geliştirmede veya senkron workflow'u henüz çalışmadığında başlık, Türkçe özet, etiket ve Article eşlemesi sağlar. Yeni bir repo pinlendiğinde metadata'sını bu listeye eklemek isteğe bağlıdır; repo generated dosyada görünür, ancak özel başlık/özet/Article bağlantısı için config'e de eklenebilir. Her repository'nin README'si ve release assetleri kullanıcı proje detayını açtığında public GitHub REST API'den yüklenir.
 
 ## Article ekleme
 
