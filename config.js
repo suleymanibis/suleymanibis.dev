@@ -2,7 +2,7 @@ export const siteConfig = {
   githubUsername: "suleymanibis",
   githubProfileUrl: "https://github.com/suleymanibis",
   linkedinUrl: "https://www.linkedin.com/",
-  instagramUrl: "https://instagram.com/suleymanibis",
+  instagramUrl: "https://instagram.com/suleymanibis1",
   email: "ibiss.suleymann@gmail.com",
   intro: "Akdeniz Üniversitesi'nde bilgisayar mühendisliği öğrencisiyim. Yazılım geliştirme ve backend sistemleriyle ilgileniyor; Java, Python ve C# ile projeler geliştiriyorum.",
   about: "Backend çözümleri geliştiriyor, Java ile aktif olarak çalışıyorum. Aynı zamanda client-side Python uygulamalarını ve C# ile kullanıcı arayüzü projelerini keşfediyorum. REST API'ler, CLI ve UI uygulamaları, Spring Boot, Hibernate, .NET ve PostgreSQL ilgi alanlarım arasında.",
