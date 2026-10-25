@@ -2,9 +2,10 @@ export const siteConfig = {
   githubUsername: "suleymanibis",
   githubProfileUrl: "https://github.com/suleymanibis",
   linkedinUrl: "https://www.linkedin.com/",
-  email: "hello@suleymanibis.dev",
-  intro: "Ürün odaklı yazılım geliştiriyor, açık kaynak projeler üretiyor ve öğrendiklerimi paylaşıyorum.",
-  about: "Karmaşık problemleri sadeleştirmeyi, iyi dokümante edilmiş sistemler kurmayı ve öğrendiklerimi paylaşmayı seviyorum. Frontend deneyimleri, geliştirici araçları ve üretken yapay zekâ kesişiminde çalışıyorum.",
+  instagramUrl: "https://instagram.com/suleymanibis",
+  email: "ibiss.suleymann@gmail.com",
+  intro: "Akdeniz Üniversitesi'nde bilgisayar mühendisliği öğrencisiyim. Yazılım geliştirme ve backend sistemleriyle ilgileniyor; Java, Python ve C# ile projeler geliştiriyorum.",
+  about: "Backend çözümleri geliştiriyor, Java ile aktif olarak çalışıyorum. Aynı zamanda client-side Python uygulamalarını ve C# ile kullanıcı arayüzü projelerini keşfediyorum. REST API'ler, CLI ve UI uygulamaları, Spring Boot, Hibernate, .NET ve PostgreSQL ilgi alanlarım arasında.",
   // GitHub REST API pinned repository listesini döndürmediği için bu liste profil
   // pin sırasıyla senkron tutulur. Yeni pin eklenince yalnızca bu diziyi güncelleyin.
   manualProjects: [

@@ -211,8 +211,11 @@ document.querySelector("#close").onclick = () => dialog.close();
 dialog.onclick = (event) => { if (event.target === dialog) dialog.close(); };
 document.querySelector("#year").textContent = new Date().getFullYear();
 document.querySelectorAll("[data-config]").forEach((element) => { element.textContent = siteConfig[element.dataset.config]; });
-document.querySelectorAll("[data-link]").forEach((element) => { element.href = element.dataset.link === "github" ? siteConfig.githubProfileUrl : siteConfig.linkedinUrl; });
-document.querySelector("[data-email]").href = `mailto:${siteConfig.email}`;
+document.querySelectorAll("[data-link]").forEach((element) => {
+  const links = { github: siteConfig.githubProfileUrl, linkedin: siteConfig.linkedinUrl, instagram: siteConfig.instagramUrl };
+  element.href = links[element.dataset.link] || "#";
+});
+document.querySelectorAll("[data-email]").forEach((element) => { element.href = `mailto:${siteConfig.email}`; });
 
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme) document.documentElement.dataset.theme = savedTheme;
