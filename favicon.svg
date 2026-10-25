@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Süleyman İbiş site icon</title>
+  <desc id="desc">Dark navy terminal window with a coral prompt symbol</desc>
+  <rect width="64" height="64" rx="14" fill="#0b1220"/>
+  <rect x="10" y="14" width="44" height="36" rx="7" fill="#111b2d" stroke="#263650" stroke-width="2"/>
+  <circle cx="19" cy="21" r="2" fill="#ff795f"/>
+  <circle cx="26" cy="21" r="2" fill="#ffb38f"/>
+  <path d="m18 30 7 6-7 6M30 42h15" fill="none" stroke="#ff795f" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"/>
+</svg>
