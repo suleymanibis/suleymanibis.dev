@@ -1,20 +1,23 @@
 export const articles = [{
-  id: "building-this-site",
-  title: "Build gerektirmeyen bir portfolyo sitesi",
+  id: "when-started-building-projects",
+  title: "Projeler geliştirmeye ne zaman başladım?",
   date: "25 Ekim 2026",
   readingTime: "4 dk okuma",
-  excerpt: "GitHub Pages üzerinde sade, hızlı ve kolay güncellenebilir bir kişisel site kurarken izlediğim yol.",
-  content: `## Neden statik?
+  excerpt: "Bir bilgisayar mühendisliği öğrencisi olarak bu işe ne zaman başladığım hakkında ufak bir yazı.",
+  content: `## Ne zaman bu alana ilgi duymaya ve projeler geliştirmeye başladım?
 
-Kişisel bir sitenin her zaman bir backend'e ihtiyacı yok. HTML, CSS ve modern JavaScript ile kurulan küçük bir uygulama hızlı açılır, kolayca versiyonlanır ve GitHub Pages üzerinde doğrudan yayınlanır.
+Aslında ortaokuldan beri kodlama yapma, projeler geliştirme gibi alanlara ilgim vardı. Bu ilgimi beşinci sınıftaki bilgisayar dersleriyle keşfettim.
+O zamanlar evde eski bir bilgisayarım vardı ve sürekli oyunlar oynardım. Beşinci sınıftaki bilgisayar derslerinde Scratch adlı bir uygulamayla tanıştım ve şunu düşündüm: 
+"Acaba ben de ileride büyük projeler geliştirebilecek miyim?". Aslında hâlâ bu soruyu kendime soruyorum çünkü henüz elimde çok büyük ölçekli bir projem yok; 
+ancak geliştirdiğim her projenin gelecekte geliştireceğim daha kapsamlı çalışmalar için sağlam bir temel oluşturduğuna inanıyorum. 
 
-Bu sitede ayarları \`config.js\` içinde, içerikleri ise \`articles.js\` içinde tutuyorum. Yeni bir makale eklemek için veritabanı ya da CMS kurmaya gerek yok.
+Bu sorunun bende oluşturduğu merakla ortaokul ve lise yıllarımda adım adım kodlamayı öğrenmeye başladım. İster Udemy kursları olsun, ister YouTube videoları olsun, 
+her platformdan kendime yarar sağlayacak bilgiler edinmeye çalıştım. Öğrendiklerim sayesinde, o dönemde beni tatmin edecek küçük projeler geliştirmeye başladım.
 
-## GitHub ile canlı veri
+Lise yıllarımın sonuna doğru bilgisayar mühendisliğinin benim için en doğru bölüm olduğunu ve bu bölümü okumam gerektiği kanısına vardım. YKS döneminde elimden geldiğince
+derslerime çalıştım. Sonuç olarak, dokuzuncu sınıfta ziyaret ettiğim Akdeniz Üniversitesi'nde bilgisayar mühendisliği öğrencisi olma hedefime ulaştım.
 
-Proje kartları herkese açık GitHub REST API'sini kullanır. README ve release assetleri yalnızca kullanıcı kartı açıldığında istenir. Pinned repository listesi REST API'de bulunmadığı için profil pin'lerini merkezi manuel listeyle eşliyorum.
+Bundan sonraki süreç ne getirir bilinmez; ancak eğer hikâyemi merak ediyorsanız takipte kalın :)
 
-## Sonuç
-
-Küçük yüzey alanı, kolay bakım ve iyi bir kullanıcı deneyimi.`
+`
 }];
