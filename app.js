@@ -136,12 +136,17 @@ function md(markdown = "", baseUrl = "") {
 
 async function api(url) {
   const response = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
-  if (!response.ok) throw Error(response.status);
+  if (!response.ok) throw new Error(`GitHub API ${response.status} for ${url}`);
   return response.json();
 }
 
 async function repo(name) {
-  try { return await api(`${base}/repos/${siteConfig.githubUsername}/${name}`); } catch { return null; }
+  try {
+    return await api(`${base}/repos/${siteConfig.githubUsername}/${name}`);
+  } catch (error) {
+    console.warn(`[portfolio] Repository metadata unavailable for ${name}.`, error);
+    return null;
+  }
 }
 
 function card(project, repository) {
@@ -163,11 +168,22 @@ function renderArticles() {
 }
 
 async function readme(name) {
+  const rawUrl = `https://raw.githubusercontent.com/${siteConfig.githubUsername}/${name}/HEAD/README.md`;
   try {
-    const data = await api(`${base}/repos/${siteConfig.githubUsername}/${name}/readme`);
-    const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, "")), (character) => character.charCodeAt(0));
-    return new TextDecoder("utf-8").decode(bytes);
-  } catch { return "Bu proje için README içeriği alınamadı."; }
+    const response = await fetch(rawUrl);
+    if (!response.ok) throw new Error(`Raw README ${response.status} for ${rawUrl}`);
+    return await response.text();
+  } catch (rawError) {
+    console.warn(`[portfolio] Raw README unavailable for ${name}; trying GitHub API fallback.`, rawError);
+    try {
+      const data = await api(`${base}/repos/${siteConfig.githubUsername}/${name}/readme`);
+      const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, "")), (character) => character.charCodeAt(0));
+      return new TextDecoder("utf-8").decode(bytes);
+    } catch (apiError) {
+      console.error(`[portfolio] README could not be loaded for ${name}.`, { rawError, apiError });
+      return "Bu proje için README içeriği alınamadı.";
+    }
+  }
 }
 
 async function release(name) {

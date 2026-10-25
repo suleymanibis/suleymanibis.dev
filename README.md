@@ -18,7 +18,7 @@ Tüm kişisel ayarlar `config.js` içindedir: `githubUsername`, profil bağlant�
 
 GitHub REST API pinned repository listesini herkese açık biçimde sağlamadığı için site `generated/pinned-projects.js` dosyasını kullanır. Bu dosya, GitHub Actions'taki `sync-pinned-repos.yml` workflow'u tarafından her gün GraphQL API ve Actions'ın geçici `GITHUB_TOKEN` yetkisiyle güncellenir. Token hiçbir zaman site JavaScript'ine veya build çıktısına yazılmaz. Pinned repo değişiklikleri workflow'un commit'i ve Pages deploy'u sonrasında otomatik görünür.
 
-`config.js` içindeki `manualProjects` pinned verisinin metadata fallback'idir: yerel geliştirmede veya senkron workflow'u henüz çalışmadığında başlık, Türkçe özet, etiket ve Article eşlemesi sağlar. Yeni bir repo pinlendiğinde metadata'sını bu listeye eklemek isteğe bağlıdır; repo generated dosyada görünür, ancak özel başlık/özet/Article bağlantısı için config'e de eklenebilir. Her repository'nin README'si ve release assetleri kullanıcı proje detayını açtığında public GitHub REST API'den yüklenir.
+`config.js` içindeki `manualProjects` pinned verisinin metadata fallback'idir: yerel geliştirmede veya senkron workflow'u henüz çalışmadığında başlık, Türkçe özet, etiket ve Article eşlemesi sağlar. Yeni bir repo pinlendiğinde metadata'sını bu listeye eklemek isteğe bağlıdır; repo generated dosyada görünür, ancak özel başlık/özet/Article bağlantısı için config'e de eklenebilir. README içeriği önce rate limit gerektirmeyen `raw.githubusercontent.com` endpoint'inden, başarısız olursa public GitHub REST API'den yüklenir. README yükleme hataları tarayıcı konsoluna açıkça yazılır ve kullanıcıya Türkçe fallback mesajı gösterilir. Release assetleri proje detayında public GitHub REST API'den yüklenir.
 
 ## Article ekleme
 
