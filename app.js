@@ -25,15 +25,113 @@ const esc = (s = "") => String(s).replace(/[&<>"']/g, (c) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
 }[c]));
 
-function md(s = "") {
-  return s.replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/^\- (.+)$/gm, "<li>$1</li>")
-    .replace(/(?:<li>.*<\/li>\n?)+/g, (x) => `<ul>${x}</ul>`)
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .split(/\n{2,}/).map((x) => /^(<h|<ul)/.test(x.trim()) ? x : `<p>${x.replace(/\n/g, "<br>")}</p>`).join("");
+function safeUrl(value, baseUrl = "") {
+  try {
+    const url = new URL(value, baseUrl || window.location.href);
+    if (!["http:", "https:", "mailto:"].includes(url.protocol)) return "";
+    return url.href;
+  } catch {
+    return "";
+  }
+}
+
+function inlineMarkdown(value, baseUrl = "") {
+  const source = String(value);
+  let output = "";
+  let index = 0;
+  const patterns = [
+    { regex: /^!\[([^\]]*)\]\((\S+?)(?:\s+["']([^"']*)["'])?\)/, render: (match) => {
+      const url = safeUrl(match[2], baseUrl);
+      return url ? `<img src="${esc(url)}" alt="${esc(match[1])}"${match[3] ? ` title="${esc(match[3])}"` : ""} loading="lazy">` : esc(match[0]);
+    } },
+    { regex: /^\[([^\]]+)\]\((\S+?)(?:\s+["']([^"']*)["'])?\)/, render: (match) => {
+      const url = safeUrl(match[2], baseUrl);
+      return url ? `<a href="${esc(url)}" target="_blank" rel="noreferrer">${inlineMarkdown(match[1], baseUrl)}</a>` : esc(match[0]);
+    } },
+    { regex: /^`([^`]+)`/, render: (match) => `<code>${esc(match[1])}</code>` },
+    { regex: /^\*\*(.+?)\*\*|^__(.+?)__/, render: (match) => `<strong>${inlineMarkdown(match[1] || match[2], baseUrl)}</strong>` },
+    { regex: /^~~(.+?)~~/, render: (match) => `<del>${inlineMarkdown(match[1], baseUrl)}</del>` },
+    { regex: /^\*(.+?)\*|^_(.+?)_/, render: (match) => `<em>${inlineMarkdown(match[1] || match[2], baseUrl)}</em>` },
+    { regex: /^(https?:\/\/[^\s<]+)/, render: (match) => `<a href="${esc(safeUrl(match[1]))}" target="_blank" rel="noreferrer">${esc(match[1])}</a>` }
+  ];
+  while (index < source.length) {
+    const match = patterns.map((item) => ({ item, match: source.slice(index).match(item.regex) }))
+      .find((item) => item.match);
+    if (match) {
+      output += match.item.render(match.match);
+      index += match.match[0].length;
+    } else {
+      output += esc(source[index]);
+      index += 1;
+    }
+  }
+  return output;
+}
+
+function md(markdown = "", baseUrl = "") {
+  const lines = String(markdown).replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n").split("\n");
+  const output = [];
+  let index = 0;
+  while (index < lines.length) {
+    const line = lines[index];
+    if (!line.trim()) { index += 1; continue; }
+    const fence = line.match(/^ {0,3}(```+|~~~+)\s*([\w+-]*)\s*$/);
+    if (fence) {
+      const code = [];
+      index += 1;
+      while (index < lines.length && !lines[index].match(new RegExp(`^ {0,3}${fence[1][0]}{${fence[1].length},}`))) code.push(lines[index++]);
+      if (index < lines.length) index += 1;
+      const language = fence[2] ? ` class="language-${esc(fence[2])}"` : "";
+      output.push(`<pre><code${language}>${esc(code.join("\n"))}</code></pre>`);
+      continue;
+    }
+    const heading = line.match(/^ {0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (heading) {
+      output.push(`<h${heading[1].length}>${inlineMarkdown(heading[2], baseUrl)}</h${heading[1].length}>`);
+      index += 1;
+      continue;
+    }
+    if (/^ {0,3}([-*_])(?:\s*\1){2,}\s*$/.test(line)) {
+      output.push("<hr>");
+      index += 1;
+      continue;
+    }
+    if (/^ {0,3}>\s?/.test(line)) {
+      const quote = [];
+      while (index < lines.length && /^ {0,3}>\s?/.test(lines[index])) quote.push(lines[index++].replace(/^ {0,3}>\s?/, ""));
+      output.push(`<blockquote>${md(quote.join("\n"), baseUrl)}</blockquote>`);
+      continue;
+    }
+    if (/^\s*[-*+]\s+/.test(line) || /^\s*\d+[.)]\s+/.test(line)) {
+      const ordered = /^\s*\d+[.)]\s+/.test(line);
+      const items = [];
+      while (index < lines.length) {
+        const item = lines[index].match(ordered ? /^\s*\d+[.)]\s+(.+)$/ : /^\s*[-*+]\s+(.+)$/);
+        if (!item) break;
+        items.push(`<li>${inlineMarkdown(item[1], baseUrl)}</li>`);
+        index += 1;
+      }
+      output.push(`<${ordered ? "ol" : "ul"}>${items.join("")}</${ordered ? "ol" : "ul"}>`);
+      continue;
+    }
+    if (line.includes("|") && index + 1 < lines.length && /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[index + 1])) {
+      const cells = (value) => value.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
+      const headers = cells(line);
+      const alignments = cells(lines[index + 1]);
+      index += 2;
+      const rows = [];
+      while (index < lines.length && lines[index].includes("|") && lines[index].trim()) {
+        rows.push(cells(lines[index++]));
+      }
+      output.push(`<div class="table-wrap"><table><thead><tr>${headers.map((cell, cellIndex) => `<th${alignments[cellIndex]?.startsWith(":") ? ` style="text-align:${alignments[cellIndex].endsWith(":") ? "center" : "left"}"` : alignments[cellIndex]?.endsWith(":") ? ' style="text-align:right"' : ""}>${inlineMarkdown(cell, baseUrl)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((_, cellIndex) => `<td>${inlineMarkdown(row[cellIndex] || "", baseUrl)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`);
+      continue;
+    }
+    const paragraph = [line];
+    index += 1;
+    while (index < lines.length && lines[index].trim() && !/^( {0,3}(#{1,6})\s+| {0,3}>| {0,3}(```|~~~)|\s*[-*+]\s+|\s*\d+[.)]\s+)/.test(lines[index])) paragraph.push(lines[index++]);
+    output.push(`<p>${inlineMarkdown(paragraph.join("\n").replace(/\n/g, " "), baseUrl)}</p>`);
+  }
+  return output.join("");
 }
 
 async function api(url) {
@@ -65,7 +163,11 @@ function renderArticles() {
 }
 
 async function readme(name) {
-  try { const data = await api(`${base}/repos/${siteConfig.githubUsername}/${name}/readme`); return atob(data.content.replace(/\n/g, "")); } catch { return "Bu proje için README içeriği alınamadı."; }
+  try {
+    const data = await api(`${base}/repos/${siteConfig.githubUsername}/${name}/readme`);
+    const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, "")), (character) => character.charCodeAt(0));
+    return new TextDecoder("utf-8").decode(bytes);
+  } catch { return "Bu proje için README içeriği alınamadı."; }
 }
 
 async function release(name) {
@@ -78,7 +180,8 @@ async function openProject(name) {
   content.innerHTML = "<p>Proje bilgileri yükleniyor...</p>";
   dialog.showModal();
   const [repository, readmeText, asset] = await Promise.all([repo(name), readme(name), release(name)]);
-  content.innerHTML = `<p class="eyebrow">${esc(repository?.language || "GitHub repository")}</p><h2>${esc(project?.title || repository?.name || name)}</h2><p>${esc(project?.summary || repository?.description || "")}</p><div class="tabs"><button class="tab active" data-tab="readme" type="button">README</button>${article ? '<button class="tab" data-tab="article" type="button">Article</button>' : ""}</div><section class="panel active" data-panel="readme">${md(esc(readmeText))}</section>${article ? `<section class="panel" data-panel="article">${md(article.content)}</section>` : ""}<div class="actions bottom">${asset ? `<a class="button primary" href="${esc(asset.browser_download_url)}">İndir: ${esc(asset.name)}</a>` : ""}<a class="button" href="${esc(repository?.html_url || `https://github.com/${siteConfig.githubUsername}/${name}`)}" target="_blank" rel="noreferrer">GitHub'da aç ↗</a></div>`;
+  const readmeBaseUrl = `https://github.com/${siteConfig.githubUsername}/${name}/blob/HEAD/`;
+  content.innerHTML = `<p class="eyebrow">${esc(repository?.language || "GitHub repository")}</p><h2>${esc(project?.title || repository?.name || name)}</h2><p>${esc(project?.summary || repository?.description || "")}</p><div class="tabs"><button class="tab active" data-tab="readme" type="button">README</button>${article ? '<button class="tab" data-tab="article" type="button">Article</button>' : ""}</div><section class="panel active" data-panel="readme">${md(readmeText, readmeBaseUrl)}</section>${article ? `<section class="panel" data-panel="article">${md(article.content)}</section>` : ""}<div class="actions bottom">${asset ? `<a class="button primary" href="${esc(asset.browser_download_url)}">İndir: ${esc(asset.name)}</a>` : ""}<a class="button" href="${esc(repository?.html_url || `https://github.com/${siteConfig.githubUsername}/${name}`)}" target="_blank" rel="noreferrer">GitHub'da aç ↗</a></div>`;
   content.querySelectorAll(".tab").forEach((tab) => { tab.onclick = () => { content.querySelectorAll(".tab,.panel").forEach((item) => item.classList.remove("active")); tab.classList.add("active"); content.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.add("active"); }; });
 }
 
